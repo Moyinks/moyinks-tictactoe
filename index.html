@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Moyinks' First Game</title>
+
+  <style>
+    :root{
+      --x-color: #122149;
+      --o-color: #eeba2b;
+      --panel-bg: rgba(0,0,0,0.45);
+    }
+    html,body { height:100%; }
+    body {
+      margin:0;
+      min-height:100%;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: url("background.jpg") center/cover no-repeat fixed;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      color:#111;
+      display:flex;
+      justify-content:center;
+      padding:18px 10px;
+      box-sizing:border-box;
+    }
+
+    .app {
+      width:100%;
+      max-width:420px;
+      margin:0 auto;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+    }
+
+    header {
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:8px;
+      margin-bottom:6px;
+    }
+
+    h1 {
+      margin:0;
+      padding:10px 14px;
+      border-radius:10px;
+      background: var(--panel-bg);
+      color:#fff;
+      font-size: clamp(18px, 4.4vw, 26px);
+      font-weight:800;
+      white-space:nowrap;
+      text-overflow:ellipsis;
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .top-row {
+      width:100%;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:4px 6px;
+      box-sizing:border-box;
+    }
+
+    .icon-btn {
+      width:38px;
+      height:38px;
+      border-radius:10px;
+      border: none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      background: rgba(255,255,255,0.85);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      transition: transform .12s ease, background .12s;
+      font-size:18px;
+      line-height:1;
+      padding:0;
+    }
+    .icon-btn:active{ transform: scale(.97); }
+    .icon-exit { background: linear-gradient(180deg,#ff6b6b,#e53935); color:white; }
+    .icon-reset { background: linear-gradient(180deg,#ffd166,#e6b800); color:#111; }
+
+    .mode-row { margin-top:6px; display:flex; justify-content:center; gap:10px; }
+
+    .score-panel {
+      margin-top:6px;
+      width:100%;
+      display:flex;
+      justify-content:center;
+      gap:22px;
+      padding:8px 10px;
+      border-radius:12px;
+      background: rgba(0,0,0,0.45);
+      color:#fff;
+      font-weight:700;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    }
+    .score-panel .item { display:flex; gap:8px; align-items:center; }
+
+    .board-wrap {
+      width:100%;
+      display:flex;
+      justify-content:center;
+      margin-top:12px;
+      margin-bottom:6px;
+    }
+
+    .board {
+      display:grid;
+      grid-template-columns: repeat(3, min(82px, 26vw));
+      grid-template-rows: repeat(3, min(82px, 26vw));
+      gap:8px;
+      padding:12px;
+      border-radius:14px;
+      background: rgba(255,255,255,0.12);
+      box-shadow: 0 8px 26px rgba(0,0,0,0.35) inset;
+    }
+
+    .cell {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:10px;
+      background: rgba(255,255,255,0.22);
+      height: min(82px, 26vw);
+      width: min(82px, 26vw);
+      font-size: clamp(30px, 8vw, 48px);
+      font-weight:900;
+      color: rgba(0,0,0,0.85);
+      cursor:pointer;
+      user-select:none;
+      transition: transform .06s ease, background .12s ease;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.18);
+      border: 2px solid rgba(0,0,0,0.3);
+    }
+    .cell:active { transform:scale(.985); }
+    .cell.X { color: var(--x-color); }
+    .cell.O { color: var(--o-color); }
+    .cell.disabled { pointer-events:none; opacity:.92; }
+
+    @keyframes glowFlash {
+      0%   { box-shadow: 0 0 0 0 rgba(255,255,255,0), 0 0 18px 6px rgba(238,186,43,0.9) inset; transform:scale(1); }
+      50%  { box-shadow: 0 0 12px 6px rgba(255,255,255,0.9), 0 0 0 0 rgba(238,186,43,0) inset; transform:scale(1.03); }
+      100% { box-shadow: 0 0 0 0 rgba(255,255,255,0), 0 0 18px 6px rgba(238,186,43,0.9) inset; transform:scale(1); }
+    }
+    .cell.win { animation: glowFlash .75s infinite; }
+
+    .message {
+      margin-top:12px;
+      min-height:30px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .msg-box {
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      padding:10px 14px;
+      border-radius:10px;
+      font-weight:800;
+      display: inline-block;
+    }
+
+    .play-again {
+      display:inline-block;
+      margin-left:8px;
+      padding:8px 14px;
+      border-radius:12px;
+      background: linear-gradient(135deg,#1e90ff,#0066cc);
+      color:#fff;
+      border:none;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow: 0 6px 18px rgba(6,47,83,0.25);
+    }
+    .play-again:hover{ transform: translateY(-2px); }
+
+    .modal-overlay {
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background: rgba(0,0,0,0.6);
+      z-index:50;
+    }
+    .modal {
+      background:white;
+      color:#111;
+      padding:16px 18px;
+      border-radius:12px;
+      min-width:240px;
+      text-align:center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+    .modal .btns { margin-top:12px; display:flex; gap:10px; justify-content:center; }
+    .modal button {
+      padding:8px 12px; border-radius:8px; border:none; cursor:pointer; font-weight:700;
+    }
+    .modal .no { background:#ddd; color:#111; }
+    .modal .yes { background:#ff4d4d; color:white; }
+
+    @media (max-width:420px) {
+      .top-row { width:100%; padding:0 6px; }
+      .score-panel { font-size:15px; gap:12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" role="application" aria-label="Moyinks First Game">
+    <header>
+      <h1>Moyinks' First Game</h1>
+      <div class="top-row">
+        <button class="icon-btn icon-exit" id="exitButton" title="Exit (power)">⏻</button>
+        <div style="width:18px"></div>
+        <button class="icon-btn icon-reset" id="resetScoreButton" title="Reset Scoreboard">🔄</button>
+      </div>
+
+      <div class="mode-row">
+        <button class="icon-btn" id="modeHuman" title="Human vs Human">👫</button>
+        <button class="icon-btn" id="modeAI" title="Human vs AI">🤖</button>
+      </div>
+    </header>
+
+    <section class="score-panel" aria-live="polite" id="scorePanel">
+      <div class="item">Player <strong style="color:var(--x-color)">X</strong>: <span id="scoreX">0</span></div>
+      <div class="item">Player <strong style="color:var(--o-color)">O</strong>: <span id="scoreO">0</span></div>
+    </section>
+
+    <div class="board-wrap">
+      <div class="board" id="board" role="grid" aria-label="Tic Tac Toe board"></div>
+    </div>
+
+    <div class="message" id="messageRow" aria-live="polite">
+      <div id="messageBox" class="msg-box" style="display:none"></div>
+      <button id="playAgainBtn" class="play-again" style="display:none">Play Again</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="exitModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document">
+      <div style="font-weight:800; margin-bottom:6px">Do you really want to exit?</div>
+      <div class="btns">
+        <button class="yes" id="confirmExitYes">Yes</button>
+        <button class="no" id="confirmExitNo">No</button>
+      </div>
+    </div>
+  </div>
+
+  <audio id="audioX" src="xSound.mp3" preload="auto"></audio>
+  <audio id="audioO" src="oSound.mp3" preload="auto"></audio>
+  <audio id="audioWin" src="win.mp3" preload="auto"></audio>
+
+  <script>
+    const boardEl = document.getElementById('board');
+    const scoreXEl = document.getElementById('scoreX');
+    const scoreOEl = document.getElementById('scoreO');
+    const messageBox = document.getElementById('messageBox');
+    const playAgainBtn = document.getElementById('playAgainBtn');
+
+    const exitBtn = document.getElementById('exitButton');
+    const exitModal = document.getElementById('exitModal');
+    const confirmYes = document.getElementById('confirmExitYes');
+    const confirmNo = document.getElementById('confirmExitNo');
+
+    const resetScoreBtn = document.getElementById('resetScoreButton');
+
+    const modeHuman = document.getElementById('modeHuman');
+    const modeAI = document.getElementById('modeAI');
+
+    const audioX = document.getElementById('audioX');
+    const audioO = document.getElementById('audioO');
+    const audioWin = document.getElementById('audioWin');
+
+    let boardState = Array(9).fill("");
+    let currentPlayer = "X";
+    let roundOver = false;
+    let scores = { X: 0, O: 0 };
+    let playVsAI = false;
+    let humanPlayer = "X";
+    let aiPlayer = "O";
+
+    const winPatterns = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+
+    function buildBoard(){
+      boardEl.innerHTML = "";
+      boardState = Array(9).fill("");
+      roundOver = false;
+      messageBox.style.display = "none";
+      playAgainBtn.style.display = "none";
+      messageBox.textContent = "";
+      for(let i=0;i<9;i++){
+        const cell = document.createElement('div');
+        cell.className='cell';
+        cell.dataset.index=i;
+        cell.setAttribute('role','button');
+        cell.setAttribute('aria-label', `cell ${i+1}`);
+        cell.addEventListener('click', onCellClick);
+        boardEl.appendChild(cell);
+      }
+    }
+
+    function onCellClick(e){
+      if(roundOver) return;
+      const idx = Number(e.currentTarget.dataset.index);
+      if(boardState[idx]) return;
+
+      if(playVsAI && currentPlayer===aiPlayer) return;
+
+      makeMove(idx, currentPlayer);
+
+      if(playVsAI && !roundOver){
+        setTimeout(()=>{ aiMove(); }, 300);
+      }
+    }
+
+    function makeMove(idx,player){
+      boardState[idx] = player;
+      const el = boardEl.children[idx];
+      el.textContent = player;
+      el.classList.add(player);
+      el.classList.add('disabled');
+
+      try{
+        const a = player==='X'?audioX:audioO;
+        a.currentTime=0; a.play().catch(()=>{});
+      }catch(e){}
+
+      const winCombo = findWinningCombo();
+      if(winCombo){
+        roundOver=true;
+        winCombo.forEach(i=>boardEl.children[i].classList.add('win'));
+        scores[player]=(scores[player]||0)+1;
+        updateScoreUI();
+        showMessage(player===humanPlayer?'🎉 You won!':'💀 You lost!');
+        try{audioWin.currentTime=0; audioWin.play().catch(()=>{});}catch(e){}
+        return;
+      }
+
+      if(boardState.every(c=>c!=="")){
+        roundOver=true;
+        showMessage("🤝 It's a Draw!");
+        return;
+      }
+
+      currentPlayer = (currentPlayer==='X')?'O':'X';
+    }
+
+    function aiMove(){
+      if(roundOver) return;
+      let empty = [];
+      boardState.forEach((v,i)=>{if(!v) empty.push(i);});
+      const idx = empty[Math.floor(Math.random()*empty.length)];
+      makeMove(idx,aiPlayer);
+    }
+
+    function findWinningCombo(){
+      for(const combo of winPatterns){
+        const [a,b,c]=combo;
+        if(boardState[a] && boardState[a]===boardState[b] && boardState[a]===boardState[c])
+          return combo;
+      }
+      return null;
+    }
+
+    function updateScoreUI(){
+      scoreXEl.textContent=scores.X||0;
+      scoreOEl.textContent=scores.O||0;
+    }
+
+    function showMessage(text){
+      messageBox.style.display="inline-block";
+      messageBox.textContent=text;
+      playAgainBtn.style.display="inline-block";
+    }
+
+    playAgainBtn.addEventListener('click', ()=>{
+      currentPlayer='X';
+      buildBoard();
+    });
+
+    exitBtn.addEventListener('click', ()=>{
+      exitModal.style.display='flex';
+      exitModal.setAttribute('aria-hidden','false');
+    });
+    confirmNo.addEventListener('click', ()=>{
+      exitModal.style.display='none';
+      exitModal.setAttribute('aria-hidden','true');
+    });
+    confirmYes.addEventListener('click', ()=>{
+      exitModal.style.display='none';
+      window.location.href='about:blank';
+    });
+
+    resetScoreBtn.addEventListener('click', ()=>{
+      scores={X:0,O:0};
+      updateScoreUI();
+      buildBoard();
+    });
+
+    modeHuman.addEventListener('click', ()=>{
+      playVsAI=false;
+      humanPlayer='X'; aiPlayer='O';
+      currentPlayer='X';
+      buildBoard();
+      showMessage("Mode: Human vs Human");
+    });
+
+    modeAI.addEventListener('click', ()=>{
+      playVsAI=true;
+      humanPlayer='X'; aiPlayer='O';
+      currentPlayer='X';
+      buildBoard();
+      showMessage("Mode: Human vs AI");
+    });
+
+    buildBoard();
+    updateScoreUI();
+
+    boardEl.addEventListener('keydown',(e)=>{
+      if(e.key==='Enter'||e.key===' '){
+        const focused=document.activeElement;
+        if(focused && focused.classList.contains('cell')) focused.click();
+      }
+    });
+
+    function unlockAudioOnFirstInteraction(){
+      try{
+        [audioX,audioO,audioWin].forEach(a=>{
+          a.currentTime=0;
+          a.play().then(()=>{ a.pause(); a.currentTime=0; }).catch(()=>{});
+        });
+      }catch(e){}
+      window.removeEventListener('touchstart',unlockAudioOnFirstInteraction);
+    }
+    window.addEventListener('touchstart',unlockAudioOnFirstInteraction,{once:true,passive:true});
+  </script>
+</body>
+</html>
