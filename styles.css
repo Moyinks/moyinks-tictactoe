@@ -1,0 +1,107 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  background: url("background.jpg") no-repeat center center fixed;
+  background-size: cover;
+  color: #fff;
+}
+
+.container {
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 10px;
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.controls button {
+  font-size: 18px;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.controls button:hover {
+  background: rgba(255,255,255,0.4);
+}
+
+/* Scoreboard */
+.scoreboard {
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+/* Board */
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  grid-template-rows: repeat(3, 100px);
+  gap: 5px;
+  justify-content: center;
+  margin: 20px auto;
+}
+
+.cell {
+  background: rgba(255,255,255,0.2);
+  border: 2px solid rgba(255,255,255,0.5);
+  border-radius: 12px;
+  font-size: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.cell:hover {
+  background: rgba(255,255,255,0.35);
+}
+
+/* Messages */
+#message {
+  font-size: 20px;
+  margin-top: 10px;
+}
+
+#restartBtn {
+  padding: 8px 15px;
+  font-size: 16px;
+  margin-top: 10px;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  background: #ffdd57;
+  color: #000;
+}
+
+/* Exit modal */
+.modal {
+  display: none;
+  margin-top: 15px;
+  background: rgba(0,0,0,0.6);
+  padding: 15px;
+  border-radius: 12px;
+  display: inline-block;
+}
+.modal button {
+  margin: 5px;
+  padding: 5px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
